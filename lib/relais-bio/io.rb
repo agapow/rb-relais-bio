@@ -3,37 +3,12 @@
 
 # Wrappers for the BioRuby sequence reading/writing functions.
 #
-# Together, the Ruby standard and third-party libraries present a cacophony of 
+# BioRuby presents several methods for reading and writing sequences, with
+# confusing unmemorable signatures. This module wraps those calls in a
+# consistent interface.
 #
 # @example
 #   # simple data reading, path is opened and closed
-#   rdr = BaseReader('file/path', {:mode=>'rb'})
-#   data = rdr.read()
-#   rdr.finish()
-#
-#   # pass open IO object instead
-#   hndl = File.open('file/path', {:mode=>'rb'})
-#   rdr = BaseReader(hndl)
-#
-#   # simpler
-#   rdr = BaseReader('file/path')
-#   ...
-#
-#   # even simpler
-#   BaseReader::use_with('file/path') { |rdr|
-#      # do something with data ...
-#   }
-#
-#   # simplest
-#   data = quick_read('file/path')
-#
-#   # equivalent write calls
-#   wrtr = BaseWriter('file/path', {:mode=>'wb'})
-#   wrtr.write(data)
-#   wrtr.finish()
-#
-#   # or ...
-#   quick_write('file/path', data)
 
 ### IMPORTS
 
@@ -54,41 +29,67 @@ module Relais
 	module Bio
 		module IO
 
-			class SeqReader < RDI::BaseReader
+			# Ascertain BioRuby parsing module from format string or symbol.
+			#
+			def resolve_format(fmt)
+				
+
+			class SeqReader < RDI::RecordReader
+
+				attr_accessor (:flatfile)
 				
 				def initialize (io_or_path, opts={})
 					## Preconditions & preparation:
 					options = defaults(
-						
+						:fmt => :auto,
+						:mode => 'rb'
 					).merge(opts)
-					
 					## Main:
+					super (io_or_path, {:mode=>options.mode})
+					dbclass = resolve_format(options.fmt)
+					@flatfile = Bio::Flatfile.new(dbclass, @hndl)
 				end
-				
+
+				def read_record
+
+				end
+
+				alias read_seq read_record
+
 			end
 
 
-			class SeqWriter < RDI::BaseWriter
+			class SeqWriter < RDI::RecordWriter
+
+				attr_accessor (:flatfile)
 				
 				def initialize (io_or_path, opts={})
 					## Preconditions & preparation:
 					options = defaults(
-						
+						:fmt => :auto,
+						:mode => 'rb'
 					).merge(opts)
-					
 					## Main:
+					super (io_or_path, {:mode=>options.mode})
+
 				end
 				
+				def write_record
+
+				end
+
+				alias write_seq write_record
+
 			end
+
 
 			def quick_read_seqs(io_or_path, opts={})
-				
-				
+				return quick_read_with(io_or_path, SeqReader, opts)	
 			end
 
 
 			def quick_write_seqs(io_or_path, seqs, opts={})
-				
+				return quick_read_with(data, io_or_path, SeqWriter, opts)
 			end
 
 		end

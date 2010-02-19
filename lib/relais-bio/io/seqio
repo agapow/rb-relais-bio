@@ -1,0 +1,11 @@
+
+
+
+class SeqReader < RecordReader
+
+end
+
+class AlnReader < RecordReader
+
+end
+
